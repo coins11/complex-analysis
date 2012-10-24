@@ -1,0 +1,25 @@
+/unitsize 256 def
+/threshold unitsize dup mul 1000000000000000000 mul def
+/buf unitsize 4 mul string def
+
+0.8 dup scale
+0 1 unitsize 2 mul {
+    0 1 unitsize 4 mul 1 sub {
+        dup unitsize 2 mul sub 2 index unitsize 2 mul sub 0 0
+        0 4 252 {
+            3 1 roll 1 index dup mul 1 index dup mul sub unitsize div 5 index add
+            3 1 roll mul 2 mul unitsize div 3 index add 3 2 roll
+            2 index dup mul 2 index dup mul add threshold ge 1 index 252 eq or {
+                buf 6 index 3 2 roll put exit
+            } if pop
+        } for
+        pop pop pop pop pop
+    } for
+    gsave
+        0 1 index translate
+        unitsize 4 mul 1 8 [1 0 0 1 0 0] buf image
+        0 unitsize 4 mul 3 2 roll 2 mul sub translate
+        unitsize 4 mul 1 8 [1 0 0 1 0 0] buf image
+    grestore
+} for
+showpage
