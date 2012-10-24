@@ -1,0 +1,111 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{luacode}
+%\usepackage{luatexja-fontspec}
+%\usepackage[hiragino]{luatexja-preset}
+%\usepackage{listings}
+
+\def\mandcolor#1#2#3#4#5#6{\directlua{mand_color(#1,#2,#3,#4,#5,#6)}}
+
+\begin{luacode*}
+local LIMIT = 100
+
+make_fun_calc_point = function (a, b, conf) 
+	local i = 1
+	local x = a
+	local y = b
+
+	return function ()
+		x, y = x * x - y * y + a, 2 * x * y + b
+		i = i + 1
+		return i, x * x + y * y
+	end
+end
+
+escape_count = function (a, b)
+	local count
+
+	for i, d in make_fun_calc_point(a, b) do
+		count = i
+		if (d > 4 or count > LIMIT) then
+			break
+		end
+	end
+
+	return count
+end
+
+mand_color_init = function (x_start, x_end, y_start, y_end, d)
+	local que = {}
+
+	for x = x_start, x_end, d do
+		table.insert(que, {x, y_start})
+	end
+
+	for y = y_start, y_end, d do
+		table.insert(que, {x_end, y})
+	end
+
+	for x = x_start, x_end, d do
+		table.insert(que, {x, y_end})
+	end
+
+	for y = y_start, y_end, d do
+		table.insert(que, {x_start, y})
+	end
+
+	return que
+end
+
+make_get_neighbor_points = function (x_start, x_end, y_start, y_end, d)
+	return function (p, drew)
+		local candidate = {
+			{p[1]-d, p[2]+d}, {p[1],   p[2]+d}, {p[1]+d, p[2]+d},
+			{p[1]-d, p[2]},						{p[1]+d, p[2]},
+			{p[1]-d, p[2]-d}, {p[1],   p[2]-d}, {p[1]+d, p[2]-d} }
+		local final = {}
+
+		for i, e in pairs(candidate) do
+			if (e[1] > x_start and e[1] < x_end and e[2] > y_start and e[2] < y_end and not (drew[table.concat(e, ",")])) then
+				table.insert(final, e)
+			end
+		end
+
+		return final
+	end
+end
+
+mand_color = function (x_start, x_end, y_start, y_end, d, conf)
+	local que                 = mand_color_init(x_start*conf, x_end*conf, y_start*conf, y_end*conf, d*conf)
+	local get_neighbor_points = make_get_neighbor_points(x_start*conf, x_end*conf, y_start*conf, y_end*conf, d*conf)
+	local drew   = {}
+	local half_d = d / 2
+
+	e = table.remove(que, 1)
+	while (e) do
+		if ( not (drew[table.concat(e, ",")]) ) then
+			drew[table.concat(e, ",")] = true
+			local count = escape_count(e[1]/conf, e[2]/conf)
+
+			if (count < LIMIT) then
+				tex.print("\\draw[red!"..count..", fill] ("..e[1]/conf..", "..e[2]/conf..") +(-"..half_d..",-"..half_d..") rectangle +("..half_d..","..half_d..");")
+
+				for i, n in pairs( get_neighbor_points(e, drew) ) do
+					table.insert(que, n)
+				end
+			end
+		end
+		e = table.remove(que, 1)
+	end
+end
+\end{luacode*}
+
+\begin{document}
+\begin{tikzpicture}[scale=10]
+
+\draw[blue,fill] (-1.8,-1.0) rectangle (.6,1.0);
+\mandcolor{-1.8}{0.6}{-1}{1}{0.01}{100}
+
+\end{tikzpicture}
+\end{document}
+
