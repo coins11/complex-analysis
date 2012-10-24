@@ -1,0 +1,28 @@
+%!PS-Adobe-2.0 EPSF-2.0
+%%BoundingBox: 0 0 16384 16384
+
+/unitsize 4096 def
+/threshold unitsize dup mul 1000000000000 mul def
+/buf unitsize 5 mul string def
+
+0 1 unitsize 2 mul {
+    dup =
+    0 1 unitsize 4 mul 1 sub {
+        dup unitsize 2 mul sub 2 index unitsize 2 mul sub 0 0
+        0 2 254 {
+            3 1 roll 1 index dup mul 1 index dup mul sub unitsize div 5 index add
+            3 1 roll mul 2 mul unitsize div 3 index add 3 2 roll
+            2 index dup mul 2 index dup mul add threshold ge 1 index 254 eq or {
+                buf 6 index 3 2 roll put exit
+            } if pop
+        } for
+        pop pop pop pop pop
+    } for
+    gsave
+        0 1 index translate
+        unitsize 4 mul 1 8 [1 0 0 1 0 0] buf image
+        0 unitsize 4 mul 3 2 roll 2 mul sub translate
+        unitsize 4 mul 1 8 [1 0 0 1 0 0] buf image
+    grestore
+} for
+showpage
